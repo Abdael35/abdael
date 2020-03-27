@@ -1,0 +1,52 @@
+version: '3.3'
+
+networks:
+    ugm:
+services:
+    ugm_nginx:
+        image: nginx:stable-alpine 
+        container_name: ugm_nginx
+        ports: 
+            - "8000:80"
+        volumes:
+            - "./www:/var/www/html"
+            - "./nginx/nginx.conf:/etc/nginx/conf.d/default.conf"
+        depends_on: 
+            - ugm_php
+            - ugm_mysql 
+        networks: 
+            - ugm
+    ugm_mysql:
+        image: mysql:latest 
+        container_name: ugm_mysql8
+        volumes:
+            - ugm_mysql8_data:/var/lib/mysql
+        command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci','--default-authentication-plugin=mysql_native_password']
+        tty: true
+        ports:
+            - "3333:3306"
+        environment:
+            MYSQL_DATABASE: bdugm
+            MYSQL_USER: ugmDev
+            MYSQL_PASSWORD: pwdUgmDev
+            MYSQL_ROOT_PASSWORD: t0pS3cr3t
+            SERVICE_NAME: ugm_mysql
+        networks:
+            - ugm
+
+    ugm_php:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: ugm_php
+        volumes:
+            - "./www:/var/www/html"
+        ports:
+            - "9999:9000"
+        networks:
+            - ugm
+volumes:
+    ugm_mysql8_data:
+
+
+
